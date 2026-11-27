@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scribbly — Quick Notes</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="navbar-inner">
+            <div class="brand">
+                <div class="brand-icon" aria-hidden="true">
+                    <i data-lucide="notebook-pen"></i>
+                </div>
+                <span class="brand-name">Scribbly</span>
+                <span id="noteCountBadge" class="note-count-badge">0 notes</span>
+            </div>
+
+            <div class="search-wrap">
+                <i data-lucide="search" class="search-icon" aria-hidden="true"></i>
+                <input
+                    type="text"
+                    id="search"
+                    class="search-input"
+                    placeholder="Search notes... (Press /)"
+                    aria-label="Search notes"
+                >
+                <button
+                    type="button"
+                    id="clearSearchBtn"
+                    class="icon-btn clear-search-btn hidden"
+                    aria-label="Clear search"
+                    title="Clear search (Esc)"
+                >
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="nav-actions">
+                <div class="export-dropdown">
+                    <button
+                        type="button"
+                        id="exportToggleBtn"
+                        class="icon-btn theme-btn"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-label="Export notes"
+                        title="Export notes (.md / .json)"
+                    >
+                        <i data-lucide="download"></i>
+                    </button>
+                    <div id="exportMenu" class="template-menu export-menu hidden" role="menu" aria-label="Export format">
+                        <button type="button" class="template-item" data-export="md" role="menuitem">
+                            <i data-lucide="file-text"></i>
+                            <span>Export Markdown (.md)</span>
+                        </button>
+                        <button type="button" class="template-item" data-export="json" role="menuitem">
+                            <i data-lucide="braces"></i>
+                            <span>Export Backup (.json)</span>
+                        </button>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    id="importNotesBtn"
+                    class="icon-btn theme-btn"
+                    aria-label="Import JSON backup"
+                    title="Import JSON backup"
+                >
+                    <i data-lucide="upload"></i>
+                </button>
+                <input
+                    type="file"
+                    id="importFileInput"
+                    class="hidden"
+                    accept=".json,application/json"
+                    aria-hidden="true"
+                >
+                <button
+                    type="button"
+                    id="themeToggleBtn"
+                    class="icon-btn theme-btn"
+                    onclick="toggleDarkMode()"
+                    aria-label="Toggle dark mode"
+                    title="Toggle theme"
+                >
+                    <i data-lucide="moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <aside class="composer-column">
+            <section id="composerCard" class="composer-card" data-color="default" aria-label="Create a note">
+                <div class="composer-header">
+                    <span class="composer-label">New Note</span>
+                    <div class="composer-header-actions">
+                        <div class="template-dropdown">
+                            <button
+                                type="button"
+                                id="templateToggleBtn"
+                                class="template-btn"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                title="Insert a quick template"
+                            >
+                                <i data-lucide="file-text"></i>
+                                <span>Templates</span>
+                                <i data-lucide="chevron-down"></i>
+                            </button>
+                            <div id="templateMenu" class="template-menu hidden" role="menu" aria-label="Note templates">
+                                <button type="button" class="template-item" data-template="study" role="menuitem">
+                                    <i data-lucide="book-open"></i>
+                                    <span>Study Summary</span>
+                                </button>
+                                <button type="button" class="template-item" data-template="code" role="menuitem">
+                                    <i data-lucide="code-2"></i>
+                                    <span>Code Snippet</span>
+                                </button>
+                                <button type="button" class="template-item" data-template="checklist" role="menuitem">
+                                    <i data-lucide="check-square"></i>
+                                    <span>Daily Checklist</span>
+                                </button>
+                                <div class="template-divider" role="separator"></div>
+                                <button type="button" class="template-item template-clear" data-template="clear" role="menuitem">
+                                    <i data-lucide="eraser"></i>
+                                    <span>Clear / Blank Note</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            id="voiceDictationBtn"
+                            class="icon-btn voice-btn"
+                            aria-label="Dictate note with voice"
+                            aria-pressed="false"
+                            title="Voice dictation"
+                        >
+                            <i data-lucide="mic"></i>
+                        </button>
+                        <button
+                            type="button"
+                            id="composerPinBtn"
+                            class="icon-btn composer-pin-btn"
+                            aria-label="Pin new note"
+                            aria-pressed="false"
+                            title="Pin note"
+                        >
+                            <i data-lucide="pin"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <input
+                    type="text"
+                    id="noteTitleInput"
+                    class="composer-title"
+                    placeholder="Title (optional)"
+                    maxlength="120"
+                    aria-label="Note title"
+                >
+
+                <div class="composer-textarea-wrap">
+                    <div id="slashMenu" class="slash-menu hidden" role="listbox" aria-label="Slash commands"></div>
+                    <textarea
+                        id="noteInput"
+                        class="composer-textarea"
+                        placeholder="Write a note... Type / for commands or - [ ] for checklists"
+                        rows="4"
+                        aria-label="Note content"
+                    ></textarea>
+                </div>
+
+                <div class="composer-options">
+                    <div class="option-group">
+                        <label for="noteTagSelect" class="sr-only">Category Tag</label>
+                        <div class="select-wrap">
+                            <i data-lucide="tag" class="select-icon" aria-hidden="true"></i>
+                            <select id="noteTagSelect" class="tag-select" aria-label="Category tag">
+                                <option value="General">General</option>
+                                <option value="Work">Work</option>
+                                <option value="Study">Study</option>
+                                <option value="Ideas">Ideas</option>
+                                <option value="Personal">Personal</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="composerColors" class="color-picker" role="radiogroup" aria-label="Note color accent">
+                        <button type="button" class="color-swatch active" data-color="default" aria-label="Default color" title="Default"></button>
+                        <button type="button" class="color-swatch" data-color="amber" aria-label="Amber color" title="Amber"></button>
+                        <button type="button" class="color-swatch" data-color="emerald" aria-label="Emerald color" title="Emerald"></button>
+                        <button type="button" class="color-swatch" data-color="sky" aria-label="Sky color" title="Sky"></button>
+                        <button type="button" class="color-swatch" data-color="rose" aria-label="Rose color" title="Rose"></button>
+                        <button type="button" class="color-swatch" data-color="violet" aria-label="Violet color" title="Violet"></button>
+                    </div>
+                </div>
+
+                <div class="composer-footer">
+                    <div class="composer-meta">
+                        <span id="count" class="char-counter">0 chars · 0 words</span>
+                        <span class="shortcut-hint">Ctrl + Enter to save</span>
+                    </div>
+                    <button type="button" id="saveNoteBtn" class="primary-btn" onclick="saveNote()">
+                        <i data-lucide="plus"></i>
+                        <span>Save Note</span>
+                    </button>
+                </div>
+            </section>
+        </aside>
+
+        <section class="notes-area" aria-label="Saved notes">
+            <div class="filter-bar">
+                <div id="filterPills" class="filter-pills" role="tablist" aria-label="Filter notes by category">
+                    <button type="button" class="filter-pill active" data-filter="All" role="tab" aria-selected="true">All</button>
+                    <button type="button" class="filter-pill" data-filter="Pinned" role="tab" aria-selected="false">Pinned</button>
+                    <button type="button" class="filter-pill" data-filter="General" role="tab" aria-selected="false">General</button>
+                    <button type="button" class="filter-pill" data-filter="Work" role="tab" aria-selected="false">Work</button>
+                    <button type="button" class="filter-pill" data-filter="Study" role="tab" aria-selected="false">Study</button>
+                    <button type="button" class="filter-pill" data-filter="Ideas" role="tab" aria-selected="false">Ideas</button>
+                    <button type="button" class="filter-pill" data-filter="Personal" role="tab" aria-selected="false">Personal</button>
+                </div>
+
+                <div class="filter-controls">
+                    <button type="button" id="sortToggleBtn" class="sort-btn" aria-label="Toggle sort order">
+                        <i data-lucide="arrow-up-down"></i>
+                        <span id="sortLabel">Newest</span>
+                    </button>
+
+                    <div class="view-toggle" role="group" aria-label="Notes view layout">
+                        <button
+                            type="button"
+                            id="gridViewBtn"
+                            class="view-toggle-btn active"
+                            data-view="grid"
+                            aria-label="Grid view"
+                            aria-pressed="true"
+                            title="Grid view"
+                        >
+                            <i data-lucide="layout-grid"></i>
+                        </button>
+                        <button
+                            type="button"
+                            id="listViewBtn"
+                            class="view-toggle-btn"
+                            data-view="list"
+                            aria-label="List view"
+                            aria-pressed="false"
+                            title="List view"
+                        >
+                            <i data-lucide="list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="notesContainer" class="notes-grid"></div>
+
+            <div id="emptyState" class="empty-state hidden">
+                <div class="empty-illustration" aria-hidden="true">
+                    <i data-lucide="sticky-note"></i>
+                </div>
+                <h2 id="emptyTitle" class="empty-title">No notes yet</h2>
+                <p id="emptyMessage" class="empty-message">Capture your first thought using the composer on the left.</p>
+                <button type="button" id="resetFiltersBtn" class="secondary-btn hidden">Clear search &amp; filters</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Distraction-Free Focus View & Edit Modal -->
+    <div id="editModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+        <div id="editModalCard" class="modal-card focus-modal-card" data-color="default">
+            <div class="modal-header">
+                <div class="modal-heading-group">
+                    <h2 id="editModalTitle" class="modal-heading">Focus View</h2>
+                    <span id="modalStats" class="modal-stats">0 words · 0 min read</span>
+                </div>
+                <div class="modal-header-actions">
+                    <button
+                        type="button"
+                        id="modalModeToggleBtn"
+                        class="template-btn modal-mode-btn"
+                        aria-label="Switch between read and edit mode"
+                        title="Toggle Read / Edit"
+                    >
+                        <i data-lucide="pencil"></i>
+                        <span id="modalModeLabel">Edit</span>
+                    </button>
+                    <button
+                        type="button"
+                        id="editPinBtn"
+                        class="icon-btn composer-pin-btn"
+                        aria-label="Pin note"
+                        aria-pressed="false"
+                        title="Pin note"
+                    >
+                        <i data-lucide="pin"></i>
+                    </button>
+                    <button
+                        type="button"
+                        id="closeModalBtn"
+                        class="icon-btn"
+                        aria-label="Close modal"
+                        title="Close (Esc)"
+                    >
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Read Mode Surface -->
+            <div id="focusReadView" class="focus-read-view">
+                <h3 id="focusReadTitle" class="focus-read-title"></h3>
+                <div id="focusReadBody" class="focus-read-body"></div>
+            </div>
+
+            <!-- Edit Mode Inputs -->
+            <div id="focusEditView" class="focus-edit-view hidden">
+                <input
+                    type="text"
+                    id="editTitleInput"
+                    class="composer-title focus-edit-title"
+                    placeholder="Title (optional)"
+                    maxlength="120"
+                    aria-label="Edit note title"
+                >
+
+                <textarea
+                    id="editContentInput"
+                    class="composer-textarea modal-textarea"
+                    placeholder="Write your note..."
+                    rows="8"
+                    aria-label="Edit note content"
+                ></textarea>
+            </div>
+
+            <div class="composer-options">
+                <div class="option-group">
+                    <div class="select-wrap">
+                        <i data-lucide="tag" class="select-icon" aria-hidden="true"></i>
+                        <select id="editTagSelect" class="tag-select" aria-label="Edit category tag">
+                            <option value="General">General</option>
+                            <option value="Work">Work</option>
+                            <option value="Study">Study</option>
+                            <option value="Ideas">Ideas</option>
+                            <option value="Personal">Personal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="editColors" class="color-picker" role="radiogroup" aria-label="Edit note color accent">
+                    <button type="button" class="color-swatch" data-color="default" aria-label="Default color" title="Default"></button>
+                    <button type="button" class="color-swatch" data-color="amber" aria-label="Amber color" title="Amber"></button>
+                    <button type="button" class="color-swatch" data-color="emerald" aria-label="Emerald color" title="Emerald"></button>
+                    <button type="button" class="color-swatch" data-color="sky" aria-label="Sky color" title="Sky"></button>
+                    <button type="button" class="color-swatch" data-color="rose" aria-label="Rose color" title="Rose"></button>
+                    <button type="button" class="color-swatch" data-color="violet" aria-label="Violet color" title="Violet"></button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <span id="modalShortcutHint" class="shortcut-hint">Click checklists to toggle · Esc to close</span>
+                <div id="modalEditButtons" class="modal-footer-buttons hidden">
+                    <button type="button" id="cancelEditBtn" class="secondary-btn">Cancel</button>
+                    <button type="button" id="saveEditBtn" class="primary-btn">
+                        <i data-lucide="check"></i>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./script.js"></script>
+</body>
+</html>
