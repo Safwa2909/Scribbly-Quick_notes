@@ -1,6 +1,6 @@
 # Scribbly — Full-Stack Quick Note Application
 
-> 🔗 **Live Demo:** [Add Render Live URL Here]
+> 🔗 **Live Demo:** https://scribbly-quick-notes.onrender.com/
 
 Scribbly is a modern, full-stack quick note-taking web application designed for fast capture, clean organization, and distraction-free reading and editing. Built with a Node.js/Express REST API and a zero-build Vanilla JavaScript frontend, it persists notes to local JSON storage while offering rich productivity tools like interactive checklists, inline slash commands, voice dictation, and two-way Markdown/JSON backups.
 
